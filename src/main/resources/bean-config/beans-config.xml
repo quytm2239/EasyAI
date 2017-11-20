@@ -8,12 +8,12 @@
 	<bean id="companyUtils" class="jira.lite.mybatis.utils.DataAccessUtilsImpl"></bean>
 
 	<bean id="companyManerger" class="jira.lite.mybatis.manager.impl.CompanyManagerImpl">
-		<property name="companyServices" ref="companyServices" />
-	</bean>
-	
-	<bean id="companyServices" class="jira.lite.mybatis.services.impl.CompanyServicesImpl">
 		<property name="companyDao" ref="companyDao" />
 	</bean>
+	
+<!-- 	<bean id="companyServices" class="jira.lite.mybatis.services.impl.CompanyServicesImpl"> -->
+<!-- 		<property name="companyDao" ref="companyDao" /> -->
+<!-- 	</bean> -->
 
 	<bean id="companyDao" class="jira.lite.mybatis.dao.impl.CompanyDaoImpl">
 		<property name="data" ref="data" />

@@ -2,9 +2,9 @@ package easy.ai.orm.manager.impl;
 
 import java.util.List;
 
+import easy.ai.orm.dao.CompanyDao;
 import easy.ai.orm.entity.CompanyPo;
 import easy.ai.orm.manager.CompanyManager;
-import easy.ai.orm.services.CompanyServices;
 
 /**
  * @author DEV-LongDT
@@ -12,7 +12,7 @@ import easy.ai.orm.services.CompanyServices;
  */
 
 public class CompanyManagerImpl implements CompanyManager{
-	private CompanyServices companyServices;
+	private CompanyDao companyDao;
 	
 	@Override
 	public void insert(CompanyPo companyPo) {
@@ -28,7 +28,7 @@ public class CompanyManagerImpl implements CompanyManager{
 
 	@Override
 	public List<CompanyPo> getAll() {
-		return companyServices.getAll();
+		return companyDao.getAll();
 	}
 
 	@Override
@@ -43,8 +43,8 @@ public class CompanyManagerImpl implements CompanyManager{
 		
 	}
 
-	public void setCompanyServices(CompanyServices companyServices) {
-		this.companyServices = companyServices;
+	public void setCompanyDao(CompanyDao companyDao) {
+		this.companyDao = companyDao;
 	}
 
 }
