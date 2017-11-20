@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN'
+  'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+ 
+<mapper namespace='jira.lite.mybatis.dao.AgentDao'>
+ 
+  <select id='get' parameterType='int' resultType='AgentPo'>
+     SELECT * FROM agent
+     WHERE ID = #{id}
+  </select>
+
+  <resultMap type='AgentPo' id='AgentResult'>
+    <id property='id' column='id'/>
+    <result property='companyId' column='company_id'/>
+    <result property='name' column='name'/>
+    <result property='email' column='email'/>
+    <result property='phone' column='phone'/>  
+    <result property='title' column='title'/>  
+    <result property='createdAt' column='created_at'/>  
+    <result property='updatedAt' column='updated_at'/>  
+  </resultMap>
+ 
+  <select id='getAll' resultMap='AgentResult'>
+   SELECT * FROM agent
+  </select>
+ 
+  <insert id='insert' parameterType='AgentPo' useGeneratedKeys='true' keyProperty='id'>
+   INSERT INTO agent(company_id, name, email, phone, title)
+   VALUES(#{companyId}, #{name}, #{email}, #{phone}, #{title})
+  </insert>
+ 
+  <update id='update' parameterType='AgentPo'>
+    UPDATE agent
+    SET
+     company_id= #{companyId},
+     name = #{name},
+     email = #{email},
+     phone = #{phone},
+     title = #{title}
+    WHERE id = #{id}
+  </update>
+ 
+  <delete id='deleteUser' parameterType='int'>
+    DELETE FROM agent WHERE id = #{id}
+  </delete>
+ 
+</mapper>

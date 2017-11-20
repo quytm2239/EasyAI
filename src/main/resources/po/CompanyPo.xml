@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN'
+  'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+ 
+<mapper namespace='jira.lite.mybatis.dao.CompanyDao'>
+ 
+  <select id='get' parameterType='int' resultType='CompanyPo'>
+     SELECT * FROM company
+     WHERE ID = #{id}
+  </select>
+
+  <resultMap type='CompanyPo' id='CompanyResult'>
+    <id property='id' column='id'/>
+    <result property='subdomain' column='subdomain'/>
+    <result property='name' column='name'/>
+    <result property='address' column='address'/>
+    <result property='phone' column='phone'/>  
+    <result property='fax' column='fax'/>  
+    <result property='scale' column='scale'/>  
+    <result property='aboutUrl' column='about_url'/>  
+    <result property='createdAt' column='created_at'/>  
+    <result property='updatedAt' column='updated_at'/>  
+  </resultMap>
+ 
+  <select id='getAll' resultMap='CompanyResult'>
+   SELECT * FROM company
+  </select>
+ 
+  <insert id='insert' parameterType='CompanyPo' useGeneratedKeys='true' keyProperty='id'>
+   INSERT INTO company(subdomain, name, address, phone, fax, scale, about_url)
+   VALUES(#{subdomain}, #{name}, #{address}, #{phone}, #{fax}, #{scale}, #{aboutUrl})
+  </insert>
+ 
+  <update id='update' parameterType='CompanyPo'>
+    UPDATE company
+    SET
+     subdomain= #{subdomain},
+     name = #{name},
+     address = #{address},
+     phone = #{phone},
+     fax = #{fax}
+     scale = #{scale}
+     about_url = #{aboutUrl}
+    WHERE id = #{id}
+  </update>
+ 
+  <delete id='deleteUser' parameterType='int'>
+    DELETE FROM company WHERE id = #{id}
+  </delete>
+ 
+</mapper>
