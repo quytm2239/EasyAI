@@ -62,7 +62,7 @@ public class WSHandler
     public void onClose(int statusCode, String reason) {
         if (handlerInterface != null) handlerInterface.onSocketClose(statusCode, reason);
         this.session = null;
-//        this.closeLatch.countDown(); // trigger latch
+        this.closeLatch.countDown(); // trigger latch
     }
 
     @OnWebSocketConnect

@@ -7,6 +7,6 @@ public class BotRun {
         System.out.println("Bot starting!!!");
         WSConnection wsConn = WSConnection.getInstance();
         wsConn.connect();
-//        wsConn.sendString("@@@@@@@");
+        wsConn.sendString("@@@@@@@");
     }
 }

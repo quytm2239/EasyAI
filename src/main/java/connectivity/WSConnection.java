@@ -2,6 +2,7 @@ package connectivity;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -24,15 +25,17 @@ public class WSConnection implements WSHandlerInterface {
 	private final String destUri = "ws://localhost:8080";
 	private final WebSocketClient client = new WebSocketClient();
 	private WSHandler socket = new WSHandler();
-	socket.handlerInterface = this;
+//	socket.handlerInterface = this;
 	
 	public void connect() {
         try {
             client.start();
+            socket.setHandlerInterface(this);
             URI echoUri = new URI(destUri);
             ClientUpgradeRequest request = new ClientUpgradeRequest();
             client.connect(socket,echoUri,request);
             isManualDisconnect = false;
+            socket.awaitClose(1, TimeUnit.SECONDS);
         } catch (IOException e) {
             e.printStackTrace();
 		} catch (Exception e) {
