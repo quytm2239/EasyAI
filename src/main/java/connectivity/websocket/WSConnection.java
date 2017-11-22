@@ -13,6 +13,11 @@ import connectivity.inteface.PingSenderInterface;
 import connectivity.inteface.WSHandlerInterface;
 import connectivity.ping.PingSender;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 	private static WSConnection instance = null;
 	private WSConnection() {
@@ -74,8 +79,8 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 	// PING SERVER TO CHECK CONNECT
 	@Override
 	public void onPing() {
-		System.out.println(new Date() + ": PING!" + ", status: " + this.getStatus());
-		if (this.getStatus() == WSConnectionStatus.CONNECTED) {
+//		System.out.println(new Date() + ": PING!" + ", status: " + this.getStatus());
+		if (this.getStatus() == WSConnectionStatus.CONNECTED && WSConfiguration.PING_WITH_MSG) {
 			this.sendString("PING!");
 		}
 		if (this.getStatus() == WSConnectionStatus.DISCONNECTED) {
@@ -87,13 +92,12 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 	public void onSocketConnect(Session session) {
         System.out.printf("Connected to: %s%n",session);
         this.setStatus(WSConnectionStatus.CONNECTED);
+        this.sendString(WSConfiguration.AI_REQUEST_STATEMENT);
 	}
 	@Override
 	public void onSocketClose(int statusCode, String reason) {
 		System.out.printf("Connection closed: %d - %s%n",statusCode,reason);
 		
-		// Comment to avoid InterruptException
-//		try { this.client.stop(); } catch (Exception e) { e.printStackTrace(); }
 		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
@@ -101,13 +105,35 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 	public void onSocketMessage(String msg) {
 		// TODO Auto-generated method stub
 		System.out.printf("Got msg: %s%n",msg);
+		
+        JSONParser parser = new JSONParser();
+
+        try {
+        	
+            Object obj = parser.parse(msg);
+            JSONObject jsonObject = (JSONObject) obj;
+//            System.out.println(jsonObject);
+
+            String message = (String) jsonObject.get("message");
+            if (message.equals(WSConfiguration.AI_REQUEST_STATEMENT)) return;
+            
+            long ultronId = (long) jsonObject.get("ultronId");
+            
+            JSONObject resObj = new JSONObject();
+            resObj.put("message", message);
+            resObj.put("ultronId", new Long(ultronId));
+    		this.sendString(resObj.toJSONString());
+            
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+		
+
 	}
 	@Override
 	public void onSocketError(Session session, Throwable error) {
 		System.out.println("Socket has error");
 		System.out.println(error.getMessage());
-		// Comment to avoid InterruptException
-//		try { this.client.stop(); } catch (Exception e) { e.printStackTrace(); }
 		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
