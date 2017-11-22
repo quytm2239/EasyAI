@@ -1,7 +1,7 @@
 /**
  * 
  */
-package connectivity;
+package connectivity.inteface;
 
 import org.eclipse.jetty.websocket.api.Session;
 

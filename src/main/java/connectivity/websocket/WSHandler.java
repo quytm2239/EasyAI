@@ -16,13 +16,12 @@
 //  ========================================================================
 //
 
-package connectivity;
+package connectivity.websocket;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -30,6 +29,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+
+import connectivity.inteface.WSHandlerInterface;
 
 /**
  * Basic Echo Client Socket
@@ -48,25 +49,49 @@ public class WSHandler
 		this.handlerInterface = handlerInterface;
 	}
 	
-	public WSHandler()
-    {
+	public Session getSession() {
+		return session;
+	}
+	public void setSession(Session session) {
+		this.session = session;
+	}
+	
+	public WSHandler() {
         this.closeLatch = new CountDownLatch(1);
     }
-//
-    public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException
-    {
-        return this.closeLatch.await(duration,unit);
+	
+	public WSHandler(WSHandlerInterface handlerInterface) {
+        this.closeLatch = new CountDownLatch(1);
+        this.handlerInterface = handlerInterface;
+    }
+
+	public void disconnect() {
+		this.session.close();
+	}
+    
+	public void waitForConnect() {
+    		try {
+			this.closeLatch.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+	public void stopWait() {
+		this.closeLatch.countDown();
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
+    		this.stopWait();
+    		this.session = null;
         if (handlerInterface != null) handlerInterface.onSocketClose(statusCode, reason);
-        this.session = null;
-        this.closeLatch.countDown(); // trigger latch
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
+    		this.stopWait();
         this.session = session;
         if (handlerInterface != null) handlerInterface.onSocketConnect(session);
     }
@@ -78,7 +103,9 @@ public class WSHandler
     
     @OnWebSocketError
     public void onError(Session session, Throwable error) {
-    	if (handlerInterface != null) handlerInterface.onSocketError(session, error);
+    		this.stopWait();
+    		this.session = null;
+    		if (handlerInterface != null) handlerInterface.onSocketError(session, error);
     }
     
     public void sendString(String data) {
@@ -99,20 +126,20 @@ public class WSHandler
     }
     
     public void sendBytes(byte[] data) {
-    	if (this.session != null && this.session.isOpen()) {
-    		// Async Send of a TEXT message to remote endpoint
-    		ByteBuffer buf = ByteBuffer.wrap(data);
-    		Future<Void> fut = null;
-    		try {
-    		    fut = session.getRemote().sendBytesByFuture(buf);
-    		    // wait for completion (timeout)
-    		    fut.get();
-    		} catch (ExecutionException | InterruptedException e) {
-    		    // Send failed
-    		    e.printStackTrace();
-    		}
+	    	if (this.session != null && this.session.isOpen()) {
+	    		// Async Send of a TEXT message to remote endpoint
+	    		ByteBuffer buf = ByteBuffer.wrap(data);
+	    		Future<Void> fut = null;
+	    		try {
+	    		    fut = session.getRemote().sendBytesByFuture(buf);
+	    		    // wait for completion (timeout)
+	    		    fut.get();
+	    		} catch (ExecutionException | InterruptedException e) {
+	    		    // Send failed
+	    		    e.printStackTrace();
+	    		}
 	    } else {
-	    	System.out.println("Socket is closed!");
+		    		System.out.println("Socket is closed!");
 	    }
     }
 }
