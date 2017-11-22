@@ -36,7 +36,7 @@ import connectivity.inteface.WSHandlerInterface;
  * Basic Echo Client Socket
  */
 @WebSocket(maxTextMessageSize = 64 * 1024)
-public class WSHandler
+public class WSSessionEvent
 {
     private final CountDownLatch closeLatch;
     private Session session;
@@ -56,11 +56,11 @@ public class WSHandler
 		this.session = session;
 	}
 	
-	public WSHandler() {
+	public WSSessionEvent() {
         this.closeLatch = new CountDownLatch(1);
     }
 	
-	public WSHandler(WSHandlerInterface handlerInterface) {
+	public WSSessionEvent(WSHandlerInterface handlerInterface) {
         this.closeLatch = new CountDownLatch(1);
         this.handlerInterface = handlerInterface;
     }
