@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 import connectivity.configuration.*;
 import connectivity.inteface.WSConnectionInterface;
 import connectivity.websocket.WSConnection;
+import mainloop.interaction.GUICommand;
 
 public class MainLoop implements WSConnectionInterface{
 	final static Logger logger = Logger.getLogger(MainLoop.class);
@@ -57,6 +58,8 @@ public class MainLoop implements WSConnectionInterface{
      
         MainLoop mainLoop = new MainLoop();
         
+        GUICommand guiCommand = GUICommand.getInstance();
+        
         // Start mainloop to show that EASYAI alive!
         while (true ) {
         		String input = null;
@@ -75,7 +78,6 @@ public class MainLoop implements WSConnectionInterface{
         		}
         }
     }
-	
 	
 	private void processMsgWithSend(String data) {
 		System.out.printf("Got data: %s%n",data);
