@@ -1,4 +1,4 @@
-package connectivity;
+package connectivity.configuration;
 
 public enum WSConnectionStatus {
 	CONNECTED,

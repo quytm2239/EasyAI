@@ -30,7 +30,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import connectivity.inteface.WSHandlerInterface;
+import connectivity.inteface.WSSessionEventInterface;
 
 /**
  * Basic Echo Client Socket
@@ -40,12 +40,12 @@ public class WSSessionEvent
 {
     private final CountDownLatch closeLatch;
     private Session session;
-    public WSHandlerInterface handlerInterface;
+    public WSSessionEventInterface handlerInterface;
     
-    public WSHandlerInterface getHandlerInterface() {
+    public WSSessionEventInterface getHandlerInterface() {
 		return handlerInterface;
 	}
-	public void setHandlerInterface(WSHandlerInterface handlerInterface) {
+	public void setHandlerInterface(WSSessionEventInterface handlerInterface) {
 		this.handlerInterface = handlerInterface;
 	}
 	
@@ -60,7 +60,7 @@ public class WSSessionEvent
         this.closeLatch = new CountDownLatch(1);
     }
 	
-	public WSSessionEvent(WSHandlerInterface handlerInterface) {
+	public WSSessionEvent(WSSessionEventInterface handlerInterface) {
         this.closeLatch = new CountDownLatch(1);
         this.handlerInterface = handlerInterface;
     }
@@ -97,8 +97,8 @@ public class WSSessionEvent
     }
 
     @OnWebSocketMessage
-    public void onMessage(String msg) { 
-    	if (handlerInterface != null) handlerInterface.onSocketMessage(msg);
+    public void onMessage(String data) { 
+    	if (handlerInterface != null) handlerInterface.onSocketMessage(data);
     }
     
     @OnWebSocketError

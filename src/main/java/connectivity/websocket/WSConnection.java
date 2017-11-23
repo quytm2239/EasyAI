@@ -2,23 +2,29 @@ package connectivity.websocket;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
-import connectivity.*;
+import connectivity.configuration.*;
 import connectivity.inteface.PingSenderInterface;
-import connectivity.inteface.WSHandlerInterface;
+import connectivity.inteface.WSConnectionInterface;
+import connectivity.inteface.WSSessionEventInterface;
 import connectivity.ping.PingSender;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-public class WSConnection implements WSHandlerInterface,PingSenderInterface {
+public class WSConnection implements WSSessionEventInterface,PingSenderInterface {
+	
+	final static Logger logger = Logger.getLogger(WSConnection.class);
+	
+	private void writeLog(String log) {
+//		if(logger.isDebugEnabled()){
+//		    logger.debug(log);
+		    System.out.println(log);
+//		}
+	}
+	
 	private static WSConnection instance = null;
 	private WSConnection() {
 	}
@@ -29,6 +35,16 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 		return instance;
 	}
 	
+	public static WSConnection getInstance(WSConnectionInterface wsConnectionInterface) {
+		if (instance == null) {
+			instance = new WSConnection();
+		}
+		instance.setWsConnectionInterface(wsConnectionInterface);
+		return instance;
+	}
+	
+
+	private WSConnectionInterface wsConnectionInterface = null;
 	private boolean isManualDisconnect = false;
 	private WSConnectionStatus status = WSConnectionStatus.DISCONNECTED;
 	private final WebSocketClient client = new WebSocketClient();
@@ -43,14 +59,23 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 		this.status = status;
 	}
 	
+	public WSConnectionInterface getWsConnectionInterface() {
+		return wsConnectionInterface;
+	}
+	public void setWsConnectionInterface(WSConnectionInterface wsConnectionInterface) {
+		this.wsConnectionInterface = wsConnectionInterface;
+	}
+	
 	public void connect() {
 		if (this.getStatus() != WSConnectionStatus.DISCONNECTED) return;
 		this.setStatus(WSConnectionStatus.CONNECTING);
+		this.writeLog("[START] call connect() - " + this.getStatus());
         try {
             client.start();
             URI echoUri = new URI(WSConfiguration.WEBSOCKET_HOST);
             client.connect(socket,echoUri,request);
             isManualDisconnect = false;
+            this.writeLog("[START] call waitForConnect() - " + this.getStatus());
             socket.waitForConnect();
             
         } catch (IOException e) {
@@ -62,6 +87,7 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 	}
 
 	public void disconnect() {
+		this.writeLog("[START] call disconnect()");
 		if (this.getStatus() == WSConnectionStatus.DISCONNECTED) return;
 		try {
 			this.socket.disconnect();
@@ -71,69 +97,42 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 		}
 	}
 	public void reconnect() {
-		if (this.getStatus() == WSConnectionStatus.CONNECTED) return;
-		System.out.println("Reconnect");
+		this.writeLog("[START] call reconnect()");
+		if (this.getStatus() != WSConnectionStatus.DISCONNECTED) return;
 		this.connect();
 	}
 	 
-	// PING SERVER TO CHECK CONNECT
 	@Override
 	public void onPing() {
-//		System.out.println(new Date() + ": PING!" + ", status: " + this.getStatus());
 		if (this.getStatus() == WSConnectionStatus.CONNECTED && WSConfiguration.PING_WITH_MSG) {
 			this.sendString("PING!");
 		}
-		if (this.getStatus() == WSConnectionStatus.DISCONNECTED) {
-			this.connect();
-		}
+		//This below line will make new connect if not ManualDisconnect and current status is DISCONNECTED
+		this.connect();
 	}
 	
 	@Override
 	public void onSocketConnect(Session session) {
-        System.out.printf("Connected to: %s%n",session);
+//        System.out.printf("Connected to: %s%n",session);
         this.setStatus(WSConnectionStatus.CONNECTED);
+        this.writeLog("[CONNECTED] - " + session.getRemoteAddress());
+        // This below line will register to be online on TRANSFER WS SERVER
         this.sendString(WSConfiguration.AI_REQUEST_STATEMENT);
 	}
 	@Override
 	public void onSocketClose(int statusCode, String reason) {
-		System.out.printf("Connection closed: %d - %s%n",statusCode,reason);
-		
+		this.writeLog("[DISCONNECTED] - statusCode: " + statusCode + " - " + "reason: " + reason);
 		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
 	@Override
-	public void onSocketMessage(String msg) {
-		// TODO Auto-generated method stub
-		System.out.printf("Got msg: %s%n",msg);
-		
-        JSONParser parser = new JSONParser();
-
-        try {
-        	
-            Object obj = parser.parse(msg);
-            JSONObject jsonObject = (JSONObject) obj;
-//            System.out.println(jsonObject);
-
-            String message = (String) jsonObject.get("message");
-            if (message.equals(WSConfiguration.AI_REQUEST_STATEMENT)) return;
-            
-            long ultronId = (long) jsonObject.get("ultronId");
-            
-            JSONObject resObj = new JSONObject();
-            resObj.put("message", message);
-            resObj.put("ultronId", new Long(ultronId));
-    		this.sendString(resObj.toJSONString());
-            
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-		
-
+	public void onSocketMessage(String data) {
+		// Passing data to MainLoop
+		if (this.getWsConnectionInterface() != null) this.getWsConnectionInterface().onIncomingData(data);
 	}
 	@Override
 	public void onSocketError(Session session, Throwable error) {
-		System.out.println("Socket has error");
-		System.out.println(error.getMessage());
+		this.writeLog("[DISCONNECTED] - error: " + error.getMessage());
 		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
@@ -149,4 +148,5 @@ public class WSConnection implements WSHandlerInterface,PingSenderInterface {
 			this.socket.sendBytes(data);
 		}
 	}
+
 }
