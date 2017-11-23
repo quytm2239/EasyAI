@@ -124,22 +124,25 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 			this.sendString("PING!");
 		}
 		//This below line will make new connect if not ManualDisconnect and current status is DISCONNECTED
-		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED && this.isReady()) this.connect();
+		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.DISCONNECTED && this.isReady()) this.connect();
 	}
 	
 	@Override
 	public void onSocketConnect(Session session) {
 //        System.out.printf("Connected to: %s%n",session);
         this.setStatus(WSConnectionStatus.CONNECTED);
+        if (this.getWsConnectionInterface() != null) this.getWsConnectionInterface().onConnect();
         this.writeLog("[CONNECTED] - " + session.getRemoteAddress());
         // This below line will register to be online on TRANSFER WS SERVER
         this.sendString(WSConfiguration.AI_REQUEST_STATEMENT);
+        
 	}
 	@Override
 	public void onSocketClose(int statusCode, String reason) {
 		this.writeLog("[DISCONNECTED] - statusCode: " + statusCode + " - " + "reason: " + reason);
 		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED) this.connect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
+		if (this.getWsConnectionInterface() != null) this.getWsConnectionInterface().onDisconnected();
 	}
 	@Override
 	public void onSocketMessage(String data) {
@@ -151,6 +154,7 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 		this.writeLog("[DISCONNECTED] - error: " + error.getMessage());
 		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED) this.connect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
+		if (this.getWsConnectionInterface() != null) this.getWsConnectionInterface().onDisconnected();
 	}
 	
 	// METHODS TO SEND DATA

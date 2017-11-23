@@ -8,5 +8,7 @@ package connectivity.inteface;
  *
  */
 public interface WSConnectionInterface {
+	public void onConnect();
 	public void onIncomingData(String data);
+	public void onDisconnected();
 }
