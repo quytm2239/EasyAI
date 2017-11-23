@@ -43,9 +43,9 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 		return instance;
 	}
 	
-
 	private WSConnectionInterface wsConnectionInterface = null;
 	private boolean isManualDisconnect = false;
+	private boolean isReady = false;
 	private WSConnectionStatus status = WSConnectionStatus.DISCONNECTED;
 	private final WebSocketClient client = new WebSocketClient();
 	private final WSSessionEvent socket = new WSSessionEvent(this);
@@ -58,12 +58,27 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 	public void setStatus(WSConnectionStatus status) {
 		this.status = status;
 	}
-	
 	public WSConnectionInterface getWsConnectionInterface() {
 		return wsConnectionInterface;
 	}
 	public void setWsConnectionInterface(WSConnectionInterface wsConnectionInterface) {
 		this.wsConnectionInterface = wsConnectionInterface;
+	}
+
+	public boolean isManualDisconnect() {
+		return isManualDisconnect;
+	}
+	public void setManualDisconnect(boolean isManualDisconnect) {
+		this.isManualDisconnect = isManualDisconnect;
+	}
+	public boolean isReady() {
+		return isReady;
+	}
+	public void setReady(boolean isReady) {
+		this.isReady = isReady;
+	}
+	public PingSender getPingSender() {
+		return pingSender;
 	}
 	
 	public void connect() {
@@ -74,7 +89,9 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
             client.start();
             URI echoUri = new URI(WSConfiguration.WEBSOCKET_HOST);
             client.connect(socket,echoUri,request);
-            isManualDisconnect = false;
+            this.setManualDisconnect(false);
+            this.setReady(true);
+            
             this.writeLog("[START] call waitForConnect() - " + this.getStatus());
             socket.waitForConnect();
             
@@ -85,22 +102,21 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 			e.printStackTrace();
 		}
 	}
-
 	public void disconnect() {
 		this.writeLog("[START] call disconnect()");
 		if (this.getStatus() == WSConnectionStatus.DISCONNECTED) return;
 		try {
 			this.socket.disconnect();
-			this.isManualDisconnect = true;
+			this.setManualDisconnect(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	public void reconnect() {
-		this.writeLog("[START] call reconnect()");
-		if (this.getStatus() != WSConnectionStatus.DISCONNECTED) return;
-		this.connect();
-	}
+//	public void reconnect() {
+//		this.writeLog("[START] call reconnect()");
+//		if (this.getStatus() != WSConnectionStatus.DISCONNECTED) return;
+//		this.connect();
+//	}
 	 
 	@Override
 	public void onPing() {
@@ -108,7 +124,7 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 			this.sendString("PING!");
 		}
 		//This below line will make new connect if not ManualDisconnect and current status is DISCONNECTED
-		this.connect();
+		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED && this.isReady()) this.connect();
 	}
 	
 	@Override
@@ -122,7 +138,7 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 	@Override
 	public void onSocketClose(int statusCode, String reason) {
 		this.writeLog("[DISCONNECTED] - statusCode: " + statusCode + " - " + "reason: " + reason);
-		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
+		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED) this.connect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
 	@Override
@@ -133,7 +149,7 @@ public class WSConnection implements WSSessionEventInterface,PingSenderInterface
 	@Override
 	public void onSocketError(Session session, Throwable error) {
 		this.writeLog("[DISCONNECTED] - error: " + error.getMessage());
-		if (!isManualDisconnect && this.getStatus() == WSConnectionStatus.CONNECTED) this.reconnect();
+		if (!this.isManualDisconnect() && this.getStatus() == WSConnectionStatus.CONNECTED) this.connect();
 		this.setStatus(WSConnectionStatus.DISCONNECTED);
 	}
 	

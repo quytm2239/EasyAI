@@ -1,6 +1,7 @@
 package mainloop;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -50,8 +51,29 @@ public class MainLoop implements WSConnectionInterface{
 
 	public static void main(String[] args) {
         System.out.println("Bot starting!!!");
+        
+        @SuppressWarnings("resource")
+		Scanner userInput = new Scanner(System.in);
+     
         MainLoop mainLoop = new MainLoop();
-        mainLoop.wsConn.connect();
+        
+        // Start mainloop to show that EASYAI alive!
+        while (true ) {
+        		String input = null;
+        		try {
+        			input = userInput.nextLine();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        		if (input != null) {
+        			if (input.equals("CONNECT")) {
+        				mainLoop.wsConn.connect();
+        			}
+        			if (input.equals("DISCONNECT")) {
+        				mainLoop.wsConn.disconnect();
+        			}
+        		}
+        }
     }
 	
 	
