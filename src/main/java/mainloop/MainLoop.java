@@ -107,37 +107,39 @@ public class MainLoop implements WSConnectionInterface {
 	private void processMsgWithSend(String data) {
 		System.out.printf("Got data: %s%n", data);
 		if (this.wsConn.getStatus() != WSConnectionStatus.CONNECTED) {
-			this.guiCommand.setMessage(data);
+			this.guiCommand.setRespondCommand(data);
 			return;
 		}
 
 		JSONParser parser = new JSONParser();
-		JSONObject resObj = new JSONObject();
-		JSONObject jsonObject = null;
+		JSONObject respondJSONObject = new JSONObject();
+		JSONObject incomeJSONObject = null;
 		try {
 			Object obj = parser.parse(data);
-			jsonObject = (JSONObject) obj;
+			incomeJSONObject = (JSONObject) obj;
 
-			String message = (String) jsonObject.get("message");
+			String message = (String) incomeJSONObject.get("message");
 			if (message.equals(WSConfiguration.AI_REQUEST_STATEMENT)) {
-				this.setUltronId((long) jsonObject.get("ultronId"));
-				this.guiCommand.setMessage(data);
+				this.setUltronId((long) incomeJSONObject.get("ultronId"));
+				this.guiCommand.setRespondCommand(data);
 				return;
 			}
-			long ultronId = (long) jsonObject.get("ultronId");
-			resObj.put("message", message);
-			resObj.put("ultronId", new Long(ultronId));
+			long ultronId = (long) incomeJSONObject.get("ultronId");
+			respondJSONObject.put("message", message);
+			respondJSONObject.put("ultronId", new Long(ultronId));
 
 		} catch (ParseException e) {
-			resObj.put("message", data);
-			resObj.put("ultronId", new Long(this.getUltronId()));
+			respondJSONObject.put("message", data);
+			respondJSONObject.put("ultronId", new Long(this.getUltronId()));
 		}
-		if ((long) resObj.get("ultronId") == this.getUltronId()) {
-			this.guiCommand.setMessage(resObj.toJSONString());
-			return;
+		if ((long) respondJSONObject.get("ultronId") == this.getUltronId()) {
+			this.guiCommand.setRespondCommand(data);
+		} else {
+			System.out.println("AUTO SEND!");
+			this.guiCommand.setAutoRespond("HUMAN " + (long) incomeJSONObject.get("ultronId") + ":" + incomeJSONObject.get("message"));
+			this.wsConn.sendString(respondJSONObject.toJSONString());
+			this.guiCommand.setAutoRespond("BOT :" + respondJSONObject.get("message"));
 		}
-		System.out.println("AUTO SEND!");
-		this.wsConn.sendString(resObj.toJSONString());
 	}
 
 	@Override

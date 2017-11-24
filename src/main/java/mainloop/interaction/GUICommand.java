@@ -1,12 +1,19 @@
 package mainloop.interaction;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,13 +35,18 @@ public class GUICommand {
 
 	private JFrame frame = new JFrame("EASYAI");
 	private JPanel panel = new JPanel();
-	private JTextField textField = new JTextField();
-	private JTextArea textArea = new JTextArea();
+	private JTextField textFieldCommand = new JTextField();
+	private JTextArea textAreaCommand = new JTextArea();
+	private JTextArea textAreaBotAutoRespond = new JTextArea();
 	private JLabel labelConnectionSatus = new JLabel("DISCONNECTED");
+	JScrollPane scroll1 = new JScrollPane (textAreaCommand, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+	JScrollPane scroll2 = new JScrollPane (textAreaBotAutoRespond, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+	
 	private int INSET = 10;
 	private int TEXTFIELD_HEIGHT = 40;
 	private int LABEL_HEIGHT = 20;
-	private int LABEL_WIDTH = 100;
+	private int LABEL_WIDTH = 150;
+	private int TEXTAREA_BOT_AUTORESPOND_WIDTH = 500;
 	private GUICommandInterface listener = null;
 
 	public GUICommandInterface getListener() {
@@ -64,8 +76,18 @@ public class GUICommand {
 		}
 	}
 
-	public void setMessage(String message) {
-		this.textArea.append(message + "\n");
+	public void setRespondCommand(String message) {
+		this.textAreaCommand.append(message + "\n");
+//		JScrollBar vertical = scroll1.getVerticalScrollBar();
+//		System.out.println(vertical.getMaximum());
+//		vertical.setValue(vertical.getMaximum());
+	}
+	public void setAutoRespond(String message) {
+		this.textAreaBotAutoRespond.append(message + "\n");
+//		JScrollBar vertical = scroll2.getVerticalScrollBar();
+//		System.out.println(vertical.getMaximum());
+//		vertical.setValue(vertical.getMaximum());
+//		scroll2.setVerticalScrollBar(vertical);
 	}
 
 	private GUICommand() {
@@ -73,33 +95,65 @@ public class GUICommand {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Setting the width and height of frame
-		Dimension reqContentSize = new Dimension(600, 400);
+		Dimension reqContentSize = new Dimension(800, 400);
 		frame.setResizable(false);
 		frame.getContentPane().setPreferredSize(reqContentSize);
 		frame.setLocationRelativeTo(null);
-
+		
 		panel.setLayout(null);
 		frame.add(panel);
+		
+		// Show frame center of screen
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);
 
-		labelConnectionSatus.setBounds((reqContentSize.width - LABEL_WIDTH) / 2, INSET, LABEL_WIDTH, LABEL_HEIGHT);
+		int COMMAND_PART_WIDTH = reqContentSize.width - TEXTAREA_BOT_AUTORESPOND_WIDTH - 2 * INSET;
+		labelConnectionSatus.setBounds((COMMAND_PART_WIDTH - LABEL_WIDTH) / 2, INSET, LABEL_WIDTH, LABEL_HEIGHT);
 		int textAreaHeight = reqContentSize.height - 4 * INSET - LABEL_HEIGHT - TEXTFIELD_HEIGHT;
 		int textFieldY = reqContentSize.height - (INSET + TEXTFIELD_HEIGHT);
-		int width = reqContentSize.width - 2 * INSET;
-		textField.setBounds(INSET, textFieldY, width, TEXTFIELD_HEIGHT);
-		textArea.setBounds(INSET, 2 * INSET + LABEL_HEIGHT, width, textAreaHeight);
+		int width = COMMAND_PART_WIDTH - 2 * INSET;
+		textFieldCommand.setBounds(INSET, textFieldY, width, TEXTFIELD_HEIGHT);
+		textAreaCommand.setBounds(INSET, 2 * INSET + LABEL_HEIGHT, width, textAreaHeight);
+		textAreaBotAutoRespond.setBounds(
+				reqContentSize.width - (TEXTAREA_BOT_AUTORESPOND_WIDTH + INSET), 
+				INSET, 
+				TEXTAREA_BOT_AUTORESPOND_WIDTH, 
+				reqContentSize.height - 2 * INSET);
 
 		panel.add(labelConnectionSatus);
-		panel.add(textArea);
-		panel.add(textField);
+		panel.add(textAreaCommand);
+		panel.add(textFieldCommand);
+		panel.add(textAreaBotAutoRespond);
 
-		Font font1 = new Font(textField.getFont().getFontName(), textField.getFont().getStyle(), 25);
-		textField.setFont(font1);
-		Font font2 = new Font(textField.getFont().getFontName(), textField.getFont().getStyle(), 15);
-		textArea.setFont(font2);
-		textArea.setEditable(false);
+		Font font1 = new Font(textFieldCommand.getFont().getFontName(), textFieldCommand.getFont().getStyle(), 25);
+		textFieldCommand.setFont(font1);
+		Font font2 = new Font(textFieldCommand.getFont().getFontName(), textFieldCommand.getFont().getStyle(), 15);
+		textAreaCommand.setFont(font2);
+		textAreaCommand.setEditable(false);
+		textAreaBotAutoRespond.setFont(font2);
+		textAreaBotAutoRespond.setEditable(false);
 		labelConnectionSatus.setForeground(new Color(255, 0, 0));
+		labelConnectionSatus.setHorizontalTextPosition(SwingConstants.CENTER);
 
-		textField.addKeyListener(new KeyListener() {
+		// Add scroll pane for each Textarea
+		JScrollPane scroll1 = new JScrollPane (textAreaCommand, 
+		   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scroll1.setBounds(textAreaCommand.getBounds());
+		panel.add(scroll1);
+		
+		JScrollPane scroll2 = new JScrollPane (textAreaBotAutoRespond, 
+				   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+				scroll2.setBounds(textAreaBotAutoRespond.getBounds());
+		panel.add(scroll2);
+		
+		// Auto scroll to bottom
+		 DefaultCaret caretCommand = (DefaultCaret)textAreaCommand.getCaret();
+		 caretCommand.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		 
+		 DefaultCaret caretAutoRespond = (DefaultCaret)textAreaBotAutoRespond.getCaret();
+		 caretAutoRespond.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+		textFieldCommand.addKeyListener(new KeyListener() {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
@@ -116,9 +170,9 @@ public class GUICommand {
 				// TODO Auto-generated method stub
 				if (e.getKeyCode() == 10) {
 					if (listener != null)
-						listener.onEnterCommand(textField.getText());
+						listener.onEnterCommand(textFieldCommand.getText());
 					// textArea.append(textField.getText() + "\n");
-					textField.setText(null);
+					textFieldCommand.setText(null);
 				}
 			}
 		});
@@ -127,7 +181,7 @@ public class GUICommand {
 			public void run() {
 				frame.pack();
 				frame.setVisible(true);
-				textField.requestFocusInWindow();
+				textFieldCommand.requestFocusInWindow();
 			}
 		});
 	}
