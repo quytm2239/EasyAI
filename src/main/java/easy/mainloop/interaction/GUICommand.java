@@ -1,26 +1,16 @@
-package mainloop.interaction;
+package easy.mainloop.interaction;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.Document;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import connectivity.configuration.WSConfiguration;
-import connectivity.configuration.WSConnectionStatus;
+import easy.connectivity.configuration.WSConnectionStatus;
 
 public class GUICommand {
 

@@ -1,4 +1,4 @@
-package mainloop;
+package easy.mainloop;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -8,11 +8,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import connectivity.configuration.*;
-import connectivity.inteface.WSConnectionInterface;
-import connectivity.websocket.WSConnection;
-import mainloop.interaction.GUICommand;
-import mainloop.interaction.GUICommandInterface;
+import easy.connectivity.configuration.*;
+import easy.connectivity.inteface.WSConnectionInterface;
+import easy.connectivity.websocket.WSConnection;
+import easy.mainloop.interaction.GUICommand;
+import easy.mainloop.interaction.GUICommandInterface;
 
 public class MainLoop implements WSConnectionInterface {
 	final static Logger logger = Logger.getLogger(MainLoop.class);
