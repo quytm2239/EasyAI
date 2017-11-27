@@ -6,8 +6,9 @@ public class NeuronCellPo {
 	private String name;
 	private String description;
 	private int[] category;
-	private int[] type;
-	private int[] functionType;
+	private int[] wordType;
+	private int[] componentType;
 	private long[] preCell;
 	private long[] postCell;
+	
 }
