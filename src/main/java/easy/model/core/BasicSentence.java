@@ -12,6 +12,8 @@ import easy.model.orm.entity.NeuronCellPo;
  *
  * Nov 29, 2017
  */
-public class Sentence {
-	private ArrayList<NeuronCellPo> listSubject;
+public class BasicSentence {
+	private ArrayList<NeuronCellPo> subjects;
+	private ArrayList<NeuronCellPo> verbs;
+	private ArrayList<NeuronCellPo> objects;
 }

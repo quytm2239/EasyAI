@@ -15,7 +15,8 @@ import easy.model.orm.PersistentEnums;
  */
 public enum CategoryType implements PersistentEnum<Integer>{
 	GRAMMAR(1, "ngữ pháp"),
-	VOCABULARY(2, "từ vựng")
+	VOCABULARY(2, "từ vựng"),
+	KNOWLEDGE(3, "kiến thức")
 	;
 
 	private static final Map<Integer, CategoryType> INDEX = PersistentEnums.index(CategoryType.class);
