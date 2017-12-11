@@ -1,7 +1,7 @@
 /**
  * 
  */
-package easy.model.orm.glossary;
+package easy.model.core;
 
 import java.util.Map;
 

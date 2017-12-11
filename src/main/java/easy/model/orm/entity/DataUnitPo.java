@@ -1,16 +1,17 @@
 package easy.model.orm.entity;
 
-public class NeuronCellPo {
+public class DataUnitPo {
 
 	private long id;
 	private String name;
 	private String description;
 	
 	private int category;
-	private int[] wordType;
-	private long[] preCell;
-	private long[] postCell;
+	private int wordType;
+	private long[] preNode;
+	private long[] postNode;
 	
+	// Index in a sentence
 	private int index;
 
 	public long getId() {
@@ -45,28 +46,28 @@ public class NeuronCellPo {
 		this.category = category;
 	}
 
-	public int[] getWordType() {
+	public int getWordType() {
 		return wordType;
 	}
 
-	public void setWordType(int[] wordType) {
+	public void setWordType(int wordType) {
 		this.wordType = wordType;
 	}
 
-	public long[] getPreCell() {
-		return preCell;
+	public long[] getPreNode() {
+		return preNode;
 	}
 
-	public void setPreCell(long[] preCell) {
-		this.preCell = preCell;
+	public void setPreNode(long[] preNode) {
+		this.preNode = preNode;
 	}
 
-	public long[] getPostCell() {
-		return postCell;
+	public long[] getPostNode() {
+		return postNode;
 	}
 
-	public void setPostCell(long[] postCell) {
-		this.postCell = postCell;
+	public void setPostNode(long[] postNode) {
+		this.postNode = postNode;
 	}
 
 	public int getIndex() {
@@ -76,6 +77,5 @@ public class NeuronCellPo {
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
 	
 }

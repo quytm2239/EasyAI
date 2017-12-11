@@ -4,7 +4,6 @@ import java.util.List;
 
 import easy.model.orm.entity.CompanyPo;
 
-
 public interface CompanyDao {
 	void insert(CompanyPo companyPo);
 	 

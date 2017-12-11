@@ -17,7 +17,7 @@ public interface CompanyManager {
 	List<CompanyPo> getAll();
 	 
 	void update(CompanyPo company);
-	 
+	
 	void delete(Integer id);
 
 }
